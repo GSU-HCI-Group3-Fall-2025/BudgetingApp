@@ -1,8 +1,9 @@
 // InvalidLogin.js
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useNavigation } from './hooks/useNavigation';
 
-export default function InvalidLogin({ navigation }) {
+export default function InvalidLogin({  }) {
   return (
     <View style={styles.container}>
       <Text style={styles.errorText}>Invalid Login Credentials</Text>
@@ -10,7 +11,7 @@ export default function InvalidLogin({ navigation }) {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('Login')}
+        onPress={() => useNavigation().goToLogin()}
       >
         <Text style={styles.buttonText}>Back to Login</Text>
       </TouchableOpacity>

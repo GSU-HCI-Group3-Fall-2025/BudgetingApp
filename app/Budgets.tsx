@@ -1,7 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, FlatList } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
 
 const categories = ['Groceries', 'Entertainment', 'Shopping', 'Dining', 'Transport'];
+
+interface Budget {
+    category: string;
+    amount: number;
+}
 
 // Predetermined fixed monthly expenses
 const fixedExpenses = [
@@ -11,12 +16,10 @@ const fixedExpenses = [
 ];
 
 export default function Budgets({ income = 0, expenses = 0 }) {
-  const [budgets, setBudgets] = useState(
-    categories.map(cat => ({ category: cat, amount: 0 }))
-  );
-  const [advice, setAdvice] = useState([]);
+  const [budgets, setBudgets] = useState<Budget[]>(categories.map(cat => ({ category: cat, amount: 0 })));
+  const [advice, setAdvice] = useState<string[]>([]);
 
-  const updateBudget = (index, value) => {
+  const updateBudget = (index: number, value: string) => {
     const updated = [...budgets];
     updated[index].amount = parseFloat(value) || 0;
     setBudgets(updated);
@@ -60,6 +63,7 @@ export default function Budgets({ income = 0, expenses = 0 }) {
       <FlatList
         data={budgets}
         keyExtractor={(item) => item.category}
+        scrollEnabled={false}
         renderItem={({ item, index }) => (
           <View style={styles.budgetItem}>
             <Text style={styles.category}>{item.category}</Text>

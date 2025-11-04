@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
+import { useNavigation } from './hooks/useNavigation';
 
-export default function AccountSettings({ navigation, route }) {
-  const [user, setUser] = useState(route.params?.user || {
+export default function AccountSettings({ params }: { params: any }) {
+  const [user, setUser] = useState( params?.user || {
     name: 'Test User',
     email: 'testuser@gmail.com',
     password: 'pass123',
@@ -11,7 +12,8 @@ export default function AccountSettings({ navigation, route }) {
   const handleSave = () => {
     console.log('Saved user info:', user);
     alert('Changes saved!');
-    navigation.goBack(); // Go back to Dashboard
+    useNavigation().goBack();
+    useNavigation().goToDashboard({ user: JSON.stringify(user) });
   };
 
   return (

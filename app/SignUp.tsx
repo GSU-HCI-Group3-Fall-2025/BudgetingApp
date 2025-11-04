@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
+import { useNavigation } from './hooks/useNavigation';
 
-export default function SignUp({ navigation }) {
+export default function SignUp() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -25,7 +26,7 @@ export default function SignUp({ navigation }) {
     Alert.alert('Sign Up Successful', `Welcome, ${firstName}!`, [
       {
         text: 'OK',
-        onPress: () => navigation.navigate('Login'),
+        onPress: () => useNavigation().goToLogin(),
       },
     ]);
   };
@@ -101,7 +102,7 @@ export default function SignUp({ navigation }) {
         <Text style={styles.buttonText}>Sign Up</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+      <TouchableOpacity onPress={() => useNavigation().goToLogin()}>
         <Text style={styles.link}>Already have an account? Login</Text>
       </TouchableOpacity>
     </ScrollView>

@@ -1,20 +1,19 @@
-// Login.js
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
+import { useNavigation } from './hooks/useNavigation';
 
-export default function Login({ navigation }) {
+export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  // Fake user for testing
+  // Fake user for testing  
   const fakeUser = {
     email: 'test@gmail.com',
     password: 'pass123',
@@ -23,9 +22,9 @@ export default function Login({ navigation }) {
 
   const handleLogin = () => {
     if (email === fakeUser.email && password === fakeUser.password) {
-      navigation.navigate('Dashboard', { user: fakeUser });
+      useNavigation().goToDashboard({ user: JSON.stringify(fakeUser) });
     } else {
-      navigation.navigate('InvalidLogin');
+      useNavigation().goToInvalidLogin();
     }
   };
 
@@ -67,13 +66,13 @@ export default function Login({ navigation }) {
         <Text style={styles.buttonText}>LOGIN</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+      <TouchableOpacity onPress={() => useNavigation().goToSignUp()}>
         <Text style={styles.link}>
           Don't have an account? Click here to Create an Account
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('ResetPassword')}>
+      <TouchableOpacity onPress={() => useNavigation().goToResetPassword()}>
         <Text style={styles.link}>
           Forgot Password? Click here to Reset your Password.
         </Text>
@@ -103,16 +102,17 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   input: {
-    width: '25%',
     padding: 12,
     marginBottom: 15,
     borderWidth: 2,
     borderColor: '#000',
     borderRadius: 12,
     backgroundColor: '#fff',
+    minWidth: 250,
+    maxWidth: 400,
+    width: '100%',
   },
   passwordRow: {
-    width: '25%',
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 15,

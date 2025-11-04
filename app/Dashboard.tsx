@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import Expenses from './Expenses';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Budgets from './Budgets';
+import Expenses from './Expenses';
+import { useNavigation } from './hooks/useNavigation';
 import Reports from './Reports';
 
-export default function Dashboard({ navigation }) {
+export default function Dashboard() {
   const [income, setIncome] = useState(0);
   const [spending, setSpending] = useState(0);
   const [activeTab, setActiveTab] = useState('Dashboard');
@@ -21,20 +22,22 @@ export default function Dashboard({ navigation }) {
   return (
     <View style={styles.container}>
       {/* Account Settings Button */}
-      <TouchableOpacity
-        style={styles.settingsButton}
-        onPress={() => navigation.navigate('AccountSettings', { user })}
-      >
-        <Text style={styles.settingsText}>⚙️</Text>
-      </TouchableOpacity>
+      <View style={styles.topRow}>
+        <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={() => useNavigation().goToAccountSettings({ user })}
+        >
+            <Text style={styles.settingsText}>⚙️</Text>
+        </TouchableOpacity>
 
-      {/* Logout Button */}
-      <TouchableOpacity
-        style={styles.logoutButton}
-        onPress={() => navigation.navigate('Login')}
-      >
-        <Text style={styles.logoutText}>LOG OUT</Text>
-      </TouchableOpacity>
+        {/* Logout Button */}
+        <TouchableOpacity
+            style={styles.logoutButton}
+            onPress={() => useNavigation().goToLogin()}
+        >
+            <Text style={styles.logoutText}>LOG OUT</Text>
+        </TouchableOpacity>
+    </View>
 
       {/* Title */}
       <Text style={styles.logo}>💰 Budget Buddy 💰</Text>
@@ -112,6 +115,7 @@ export default function Dashboard({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#E8F5E9' },
+  topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', height: "12%"},
   logo: { fontSize: 32, fontWeight: 'bold', color: '#2E7D32', textAlign: 'center', marginVertical: 10 },
   pageTitle: { fontSize: 24, fontWeight: 'bold', color: '#2E7D32', textAlign: 'center', marginVertical: 5 },
   pageDescription: { fontSize: 16, color: '#1B5E20', textAlign: 'center', marginBottom: 15, paddingHorizontal: 10 },

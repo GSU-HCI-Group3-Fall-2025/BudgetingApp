@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 
 const screenWidth = Dimensions.get('window').width;
@@ -13,8 +13,16 @@ const months2025 = [
 const fakeIncomeData = [3000, 3200, 3100, 2800, 3500, 3300, 3000, 3400, 3200, 3600, 3100, 3300];
 const fakeExpenseData = [2500, 3000, 2800, 2900, 3400, 3200, 3100, 3300, 3250, 3500, 3000, 3100];
 
+interface MonthlyData {
+  month: string;
+  income: number;
+  expenses: number;
+  savings: number;
+  advice: { good: string; improve: string };
+}
+
 // Generate advice based on income vs expenses
-const getAdvice = (income, expenses) => {
+const getAdvice = (income: number, expenses: number) => {
   const savings = income - expenses;
   if (savings > income * 0.2) {
     return { good: 'Excellent savings!', improve: '' };
@@ -26,8 +34,8 @@ const getAdvice = (income, expenses) => {
 };
 
 export default function Reports() {
-  const [monthlyData, setMonthlyData] = useState([]);
-  const [selectedMonth, setSelectedMonth] = useState(null);
+  const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
+  const [selectedMonth, setSelectedMonth] = useState<MonthlyData | null>(null);
 
   useEffect(() => {
     const data = months2025.map((month, i) => {
@@ -41,16 +49,16 @@ export default function Reports() {
   }, []);
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <Text style={styles.title}>Monthly Reports 2025</Text>
 
       <LineChart
         data={{
           labels: months2025,
           datasets: [
-            { data: monthlyData.map(m => m.income), color: () => '#2E7D32', strokeWidth: 2, label: 'Income' },
-            { data: monthlyData.map(m => m.expenses), color: () => '#E53935', strokeWidth: 2, label: 'Expenses' },
-            { data: monthlyData.map(m => m.savings), color: () => '#43A047', strokeWidth: 2, label: 'Savings' },
+            { data: monthlyData.length > 0 ? monthlyData.map(m => m.income) : [0], color: () => '#2E7D32', strokeWidth: 2, },
+            { data: monthlyData.length > 0 ? monthlyData.map(m => m.expenses) : [0], color: () => '#E53935', strokeWidth: 2,},
+            { data: monthlyData.length > 0 ? monthlyData.map(m => m.savings) : [0], color: () => '#43A047', strokeWidth: 2, },
           ],
           legend: ['Income', 'Expenses', 'Savings'],
         }}
@@ -70,7 +78,7 @@ export default function Reports() {
         style={{ marginVertical: 10, borderRadius: 16 }}
         fromZero
         bezier
-        onDataPointClick={(data) => setSelectedMonth(monthlyData[data.index])}
+        onDataPointClick={(data: any) => setSelectedMonth(monthlyData[data.index])}
       />
 
       {/* Show details only when user taps a month */}
@@ -95,7 +103,7 @@ export default function Reports() {
           </TouchableOpacity>
         </View>
       )}
-    </ScrollView>
+    </View>
   );
 }
 

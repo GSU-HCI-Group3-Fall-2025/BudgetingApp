@@ -1,22 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, Alert, StyleSheet } from 'react-native';
+import React, { JSX, useEffect, useState } from 'react';
+import { Alert, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 // Predetermined fixed expenses
-const fixedExpenses = [
+
+interface Expense {
+    id: string;
+    title: string;
+    amount: number;
+    date?: string;
+}
+
+const fixedExpenses: Expense[] = [
   { id: 'f1', title: 'Rent/Mortgage', amount: 800 },
   { id: 'f2', title: 'Gas', amount: 150 },
   { id: 'f3', title: 'Utilities', amount: 120 },
 ];
 
-export default function Expenses({ onTotalChange }) {
-  const [expenses, setExpenses] = useState([]);
-  const [newTitle, setNewTitle] = useState('');
-  const [newAmount, setNewAmount] = useState('');
-  const [newDate, setNewDate] = useState('');
-  const [editId, setEditId] = useState(null);
-  const [tempAmount, setTempAmount] = useState('');
-  const [tempTitle, setTempTitle] = useState('');
-  const [tempDate, setTempDate] = useState('');
+export default function Expenses({ onTotalChange } : any) {
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [newTitle, setNewTitle] = useState<string>('');
+  const [newAmount, setNewAmount] = useState<string>('');
+  const [newDate, setNewDate] = useState<string>('');
+  const [editId, setEditId] = useState<string | null>(null);
+  const [tempAmount, setTempAmount] = useState<string>('');
+  const [tempTitle, setTempTitle] = useState<string>('');
+  const [tempDate, setTempDate] = useState<string>('');
 
   // Update total spending whenever fixed + variable expenses change
   useEffect(() => {
@@ -47,11 +55,11 @@ export default function Expenses({ onTotalChange }) {
     setNewDate('');
   };
 
-  const startEdit = (item) => {
+  const startEdit = (item: Expense) => {
     setEditId(item.id);
     setTempAmount(item.amount.toString());
     setTempTitle(item.title);
-    setTempDate(item.date);
+    setTempDate(item.date? item.date : '') ;
   };
 
   const saveEdit = () => {
@@ -67,11 +75,11 @@ export default function Expenses({ onTotalChange }) {
     setTempDate('');
   };
 
-  const deleteExpense = (id) => {
+  const deleteExpense = (id : string) => {
     setExpenses(expenses.filter(exp => exp.id !== id));
   };
 
-  const renderExpenseItem = ({ item }) => (
+  const renderExpenseItem = (item: Expense): JSX.Element => (
     <View style={styles.expenseItem}>
       {editId === item.id ? (
         <>
@@ -110,7 +118,8 @@ export default function Expenses({ onTotalChange }) {
       <FlatList
         data={expenses}
         keyExtractor={(item) => item.id}
-        renderItem={renderExpenseItem}
+        scrollEnabled={false}
+        renderItem={(object) => renderExpenseItem(object.item)}
       />
 
       {/* Add New Expense */}

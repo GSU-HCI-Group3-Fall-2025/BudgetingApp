@@ -1,12 +1,13 @@
 // ResetPassword.js
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Platform } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useNavigation } from './hooks/useNavigation';
 
-export default function ResetPassword({ navigation }) {
+export default function ResetPassword() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const validateEmail = (e) => {
+  const validateEmail = (e: string) => {
     // Email regex
     return /\S+@\S+\.\S+/.test(e);
   };
@@ -31,7 +32,8 @@ export default function ResetPassword({ navigation }) {
 
       if (res.ok) {
         // navigate to confirmation screen (or show alert)
-        navigation.navigate('ResetConfirmation', { email });
+        //TODO: create ResetConfirmation screen
+        //useNavigation().goToResetConfirmation({ email });
       } else {
         Alert.alert('Error', json.message || 'Unable to send reset email.');
       }
@@ -62,7 +64,7 @@ export default function ResetPassword({ navigation }) {
         {loading ? <ActivityIndicator /> : <Text style={styles.buttonText}>SEND RESET LINK</Text>}
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.goBack()}>
+      <TouchableOpacity onPress={() => useNavigation().goBack()}>
         <Text style={styles.link}>Back to Login</Text>
       </TouchableOpacity>
     </View>
