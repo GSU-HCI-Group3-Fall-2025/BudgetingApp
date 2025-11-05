@@ -2,28 +2,46 @@ import React, { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
 import { useNavigation } from './hooks/useNavigation';
 
+export interface User {
+    firstName?: string
+    lastName?: string
+    email: string
+    pword: string
+    income?: number
+    savingsGoal?: number
+}
+
 export default function SignUp() {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [income, setIncome] = useState('');
-  const [savingsGoal, setSavingsGoal] = useState('');
+    const [user, setUser] = useState<User>({
+        firstName: "",
+        lastName: "",
+        email: "",
+        pword: "",
+        income: 0,
+        savingsGoal: 0,
+    })
+    const [confirmPassword, setConfirmPassword] = useState<string>("")
 
   const handleSignUp = () => {
     // Basic validation
-    if (!firstName || !lastName || !email || !password || !confirmPassword) {
+
+    if (!user.firstName || !user.lastName || !user.email || !user.pword || !confirmPassword) {
       Alert.alert('Error', 'Please fill all required fields');
       return;
     }
-    if (password !== confirmPassword) {
+
+    if (user.pword !== confirmPassword) {
       Alert.alert('Error', 'Passwords do not match');
       return;
     }
 
     // Sign up success → redirect to login
-    Alert.alert('Sign Up Successful', `Welcome, ${firstName}!`, [
+    try {
+        //Sign Up FLOW
+    } catch (error: any) {
+        Alert.alert("Error", error.message)
+    }
+    Alert.alert('Sign Up Successful', `Welcome, ${user.firstName}!`, [
       {
         text: 'OK',
         onPress: () => useNavigation().goToLogin(),
@@ -40,24 +58,24 @@ export default function SignUp() {
         style={styles.input}
         placeholder="First Name"
         placeholderTextColor="#666"
-        value={firstName}
-        onChangeText={setFirstName}
+        value={user.firstName}
+        onChangeText={(firstName) => setUser(prevUser => ({...prevUser, firstName: firstName}))}
       />
 
       <TextInput
         style={styles.input}
         placeholder="Last Name"
         placeholderTextColor="#666"
-        value={lastName}
-        onChangeText={setLastName}
+        value={user.lastName}
+        onChangeText={(lastName) => setUser(prevUser => ({...prevUser, lastName: lastName}))}
       />
 
       <TextInput
         style={styles.input}
         placeholder="Email"
         placeholderTextColor="#666"
-        value={email}
-        onChangeText={setEmail}
+        value={user.email}
+        onChangeText={(email) => setUser(prevUser => ({...prevUser, email: email}))}
         keyboardType="email-address"
         autoCapitalize="none"
       />
@@ -66,8 +84,8 @@ export default function SignUp() {
         style={styles.input}
         placeholder="Password"
         placeholderTextColor="#666"
-        value={password}
-        onChangeText={setPassword}
+        value={user.pword}
+        onChangeText={(pword) => setUser(prevUser => ({...prevUser, pword: pword}))}
         secureTextEntry
       />
 
@@ -84,8 +102,8 @@ export default function SignUp() {
         style={styles.input}
         placeholder="Monthly Income (Optional)"
         placeholderTextColor="#666"
-        value={income}
-        onChangeText={setIncome}
+        value={user.income?.toString() || ""}
+        onChangeText={(income) => setUser(prevUser => ({...prevUser, income: parseFloat(income) || 0}))}
         keyboardType="numeric"
       />
 
@@ -93,8 +111,8 @@ export default function SignUp() {
         style={styles.input}
         placeholder="Savings Goal (Optional)"
         placeholderTextColor="#666"
-        value={savingsGoal}
-        onChangeText={setSavingsGoal}
+        value={user.savingsGoal?.toString() || ""}
+        onChangeText={(savings) => setUser(prevUser => ({...prevUser, savings: parseFloat(savings) || 0}))}
         keyboardType="numeric"
       />
 

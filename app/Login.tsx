@@ -6,7 +6,9 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useAuthenticator } from './hooks/useAuthenticator';
 import { useNavigation } from './hooks/useNavigation';
+import { handleSignInNextStep } from './utils/AuthUtils';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -20,11 +22,13 @@ export default function Login() {
     name: 'Test User',
   };
 
-  const handleLogin = () => {
-    if (email === fakeUser.email && password === fakeUser.password) {
-      useNavigation().goToDashboard({ user: JSON.stringify(fakeUser) });
-    } else {
-      useNavigation().goToInvalidLogin();
+  const handleLogin = async () => {
+     try {
+        const response = await useAuthenticator().signIn({email: email, pword: password})
+        handleSignInNextStep(response);
+    } catch (error) {
+        console.log("Error", error)
+        useNavigation().goToInvalidLogin();
     }
   };
 
