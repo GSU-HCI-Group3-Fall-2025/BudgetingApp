@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Budgets from './Budgets';
 import Expenses from './Expenses';
+import { useAuthenticator } from './hooks/useAuthenticator';
 import { useNavigation } from './hooks/useNavigation';
 import Reports from './Reports';
+import { checkIsAuthenticated } from './utils/AuthUtils';
 
 export default function Dashboard() {
   const [income, setIncome] = useState(0);
@@ -16,6 +19,24 @@ export default function Dashboard() {
     email: 'testuser@gmail.com',
     password: 'pass123',
   });
+
+    useEffect(() => {
+        checkAuthState();
+    }, []);
+  
+    const checkAuthState = async () => {
+        const isAuth = await checkIsAuthenticated();
+        if (!isAuth) {
+        router.replace("/Login");
+        }
+    };
+  
+    const { signOut } = useAuthenticator(); 
+
+    const handleLogout = () => {
+        signOut();
+        useNavigation().goToLogin();
+    }
 
   const remainingBudget = income - spending;
 
@@ -33,7 +54,7 @@ export default function Dashboard() {
         {/* Logout Button */}
         <TouchableOpacity
             style={styles.logoutButton}
-            onPress={() => useNavigation().goToLogin()}
+            onPress={handleLogout}
         >
             <Text style={styles.logoutText}>LOG OUT</Text>
         </TouchableOpacity>

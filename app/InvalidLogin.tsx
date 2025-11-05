@@ -3,11 +3,15 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useNavigation } from './hooks/useNavigation';
 
-export default function InvalidLogin({  }) {
+export default function InvalidLogin( errorMessage?: string) {
+
+    if (!errorMessage) {
+        errorMessage = "Please check your email and password and try again."
+    }
   return (
     <View style={styles.container}>
       <Text style={styles.errorText}>Invalid Login Credentials</Text>
-      <Text style={styles.subText}>Please check your email and password and try again.</Text>
+      <Text style={styles.subText}>{errorMessage}</Text>
 
       <TouchableOpacity
         style={styles.button}
