@@ -1,6 +1,6 @@
 import { ConfirmSignInOutput, ConfirmSignUpOutput, SignInOutput, SignUpOutput, autoSignIn, resendSignUpCode } from '@aws-amplify/auth';
-import { getCurrentUser } from "aws-amplify/auth";
 import { ConfirmType } from '../Confirm';
+import { useAuthenticator } from '../hooks/useAuthenticator';
 import { useNavigation } from "../hooks/useNavigation";
 import { User } from '../SignUp';
 
@@ -73,7 +73,7 @@ const handleRegisterNextStep = async (response: SignUpOutput, user: User) => {
 
 export const checkIsAuthenticated = async() => {
     try {
-        await getCurrentUser();
+        await useAuthenticator().getUser();
         return true;
     } catch (error: any) {
         if (error.name === 'UserUnAuthenticatedException') {

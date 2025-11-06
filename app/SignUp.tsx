@@ -13,8 +13,7 @@ export interface User {
     savingsGoal: string;  // Keeping as string based on your component logic
 }
 
-// --- NEW VALIDATION FUNCTION ---
-interface ValidationResult {
+export interface ValidationResult {
     isValid: boolean;
     message: string;
 }

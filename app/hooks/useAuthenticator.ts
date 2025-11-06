@@ -1,5 +1,5 @@
 import { Amplify } from "aws-amplify";
-import { confirmResetPassword, ConfirmResetPasswordInput, confirmSignIn, ConfirmSignInInput, ConfirmSignInOutput, confirmSignUp, ConfirmSignUpInput, ConfirmSignUpOutput, resetPassword, ResetPasswordOutput, signIn, SignInOutput, signOut, signUp, SignUpOutput } from 'aws-amplify/auth';
+import { confirmResetPassword, ConfirmResetPasswordInput, confirmSignIn, ConfirmSignInInput, ConfirmSignInOutput, confirmSignUp, ConfirmSignUpInput, ConfirmSignUpOutput, getCurrentUser, GetCurrentUserOutput, resetPassword, ResetPasswordOutput, signIn, SignInOutput, signOut, signUp, SignUpOutput } from 'aws-amplify/auth';
 import { User } from "../SignUp";
 
 import outputs from "../../amplify_outputs.json";
@@ -52,6 +52,9 @@ export const useAuthenticator = () => {
             return await resetPassword({
                 username: email
             })
+        },
+        getUser: async(): Promise<GetCurrentUserOutput> => {
+            return await getCurrentUser();
         }
     }
 }
