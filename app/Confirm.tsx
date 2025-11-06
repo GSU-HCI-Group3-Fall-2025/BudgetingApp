@@ -1,62 +1,134 @@
-import { confirmSignIn, confirmSignUp } from 'aws-amplify/auth';
+import { useRoute } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { handleSignInNextStep } from './utils/AuthUtils';
+import { useAuthenticator } from './hooks/useAuthenticator';
+import { useNavigation } from './hooks/useNavigation';
+import { getClientMetadata, handleAuth } from './utils/AuthUtils';
 
 export enum ConfirmType {
-    NEW_PASSWORD_REQUIRED,
-    SIGN_UP_CODE,
-    OTHER,
+    NEW_PASSWORD_REQUIRED = "NEWPASS",
+    SIGN_UP_CODE = "SIGNUP",
+    RESET_PASSWORD = "RESET_PASSWORD",
+    OTHER = "OTHER",
 }
 
-export default function Confirm(type: ConfirmType, username?: string) {
+export default function Confirm() {
+  const route = useRoute();
   const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const { type, username }: { type?: ConfirmType, username?: string } = route.params || {};
 
-  const handleConfirm = async () => {
+  const authenticator = useAuthenticator();
+  const navigator = useNavigation();
+
+  const handleConfirm = async (confirmType: ConfirmType) => {
     try {
         var response;
-        switch(type) {
+        switch(confirmType) {
             case ConfirmType.NEW_PASSWORD_REQUIRED:
-                response = await confirmSignIn({ challengeResponse: newPassword });
-                handleSignInNextStep(response);
-                return;
-            case ConfirmType.SIGN_UP_CODE:
-                response = await confirmSignUp({ username: username || "", confirmationCode: code });
+                response = await authenticator.confirmSignIn({ challengeResponse: newPassword });
+                //console.log("Password");
+                handleAuth(response, {email: username || "", pword: newPassword, income: "0", savingsGoal: "0"});
                 break;
-            default:
-                await confirmSignIn({ challengeResponse: code });
+            case ConfirmType.SIGN_UP_CODE:
+                //console.log("Verification Code", code);
+                response = await authenticator.confirmSignUp({ username: username || "", confirmationCode: code, options: { clientMetadata: getClientMetadata() || {}} });
+                handleAuth(response, {email: username || "", pword: newPassword, income: "0", savingsGoal: "0"});
+                break;
+            case ConfirmType.RESET_PASSWORD:
+                response = await authenticator.confirmResetPassword({
+                    username: username || "",
+                    confirmationCode: code,
+                    newPassword: newPassword,
+                });
+                Alert.alert(
+                    'Success!', 
+                    "Password Reset Successfully!",
+                    [{ text: 'OK' }],
+                    { cancelable: false });
+                navigator.goToLogin();
+                break;
+             default:
+                //console.log("Going to default case");
+                response = authenticator.confirmSignIn({ challengeResponse: code });
+                break;
         }
+        //console.log("Confirm response", response);
     } catch (error: any) {
-      Alert.alert('Error', error.message);
+        Alert.alert('Error', error.message);
     }
-  };
+};
 
+  const getConfirmTitle = (type: ConfirmType) => {
+  switch(type) {
+    case ConfirmType.NEW_PASSWORD_REQUIRED:
+      return "New Password";
+    case ConfirmType.SIGN_UP_CODE:
+      return "Enter Verification Code";
+    case ConfirmType.RESET_PASSWORD:
+      return "Reset Password";
+    default:
+      return "Confirm";
+  }
+};
   return (
     <View style={styles.container}>
       <Text style={styles.title}>
-        {type === ConfirmType.NEW_PASSWORD_REQUIRED ? 'Set New Password' : 'Enter Verification Code'}
+        {getConfirmTitle(type || ConfirmType.OTHER)}
       </Text>
 
-      {type === ConfirmType.NEW_PASSWORD_REQUIRED ? (
-        <TextInput
-          style={styles.input}
-          placeholder="Enter new password"
-          secureTextEntry
-          value={newPassword}
-          onChangeText={setNewPassword}
-        />
-      ) : (
-        <TextInput
-          style={styles.input}
-          placeholder="Enter verification code"
-          keyboardType="numeric"
-          value={code}
-          onChangeText={setCode}
-        />
-      )}
+      {(() => {
+        switch(type) {
+          case ConfirmType.NEW_PASSWORD_REQUIRED:
+            return (
+              <TextInput
+                style={styles.input}
+                placeholder="Enter new password"
+                secureTextEntry
+                value={newPassword}
+                onChangeText={setNewPassword}
+              />
+            );
+          
+          case ConfirmType.SIGN_UP_CODE:
+            return (
+              <TextInput
+                style={styles.input}
+                placeholder="Enter verification code"
+                keyboardType="numeric"
+                value={code}
+                onChangeText={setCode}
+              />
+            );
+          
+          case ConfirmType.RESET_PASSWORD:
+            return (
+              <>
+              <TextInput
+                  style={styles.input}
+                  placeholder="Enter verification code"
+                  keyboardType="numeric"
+                  value={code}
+                  onChangeText={setCode}
+                />
 
-      <TouchableOpacity style={styles.button} onPress={handleConfirm}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter new password"
+                  secureTextEntry
+                  value={newPassword}
+                  onChangeText={setNewPassword}
+                />
+              </>
+            );
+          
+          case ConfirmType.OTHER:
+          default:
+            return null;
+        }
+      })()}
+
+      <TouchableOpacity style={styles.button} onPress={() => handleConfirm(type || ConfirmType.OTHER)}>
         <Text style={styles.buttonText}>Confirm</Text>
       </TouchableOpacity>
     </View>

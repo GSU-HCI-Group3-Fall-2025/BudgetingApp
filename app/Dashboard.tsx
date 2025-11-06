@@ -20,6 +20,8 @@ export default function Dashboard() {
     password: 'pass123',
   });
 
+  const navigator = useNavigation();
+
     useEffect(() => {
         checkAuthState();
     }, []);
@@ -35,7 +37,7 @@ export default function Dashboard() {
 
     const handleLogout = () => {
         signOut();
-        useNavigation().goToLogin();
+        navigator.goToLogin();
     }
 
   const remainingBudget = income - spending;
@@ -46,7 +48,7 @@ export default function Dashboard() {
       <View style={styles.topRow}>
         <TouchableOpacity
             style={styles.settingsButton}
-            onPress={() => useNavigation().goToAccountSettings({ user })}
+            onPress={() => navigator.goToAccountSettings({ user })}
         >
             <Text style={styles.settingsText}>⚙️</Text>
         </TouchableOpacity>
