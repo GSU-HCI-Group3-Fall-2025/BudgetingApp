@@ -8,27 +8,24 @@ import {
 } from 'react-native';
 import { useAuthenticator } from './hooks/useAuthenticator';
 import { useNavigation } from './hooks/useNavigation';
-import { handleSignInNextStep } from './utils/AuthUtils';
+import { User } from './SignUp';
+import { handleAuth } from './utils/AuthUtils';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  // Fake user for testing  
-  const fakeUser = {
-    email: 'test@gmail.com',
-    password: 'pass123',
-    name: 'Test User',
-  };
-
+  const navigator = useNavigation();
+  
   const handleLogin = async () => {
      try {
-        const response = await useAuthenticator().signIn({email: email, pword: password})
-        handleSignInNextStep(response);
+        const user: User = {email: email, pword: password, income: "0", savingsGoal: "0"};
+        const response = await useAuthenticator().signIn(user);
+        handleAuth(response, user);
     } catch (error) {
-        console.log("Error", error)
-        useNavigation().goToInvalidLogin();
+        //console.log("Error", error)
+        navigator.goToInvalidLogin({errorMessage: (error as any).toString()});
     }
   };
 
@@ -70,13 +67,13 @@ export default function Login() {
         <Text style={styles.buttonText}>LOGIN</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => useNavigation().goToSignUp()}>
+      <TouchableOpacity onPress={() => navigator.goToSignUp()}>
         <Text style={styles.link}>
           Don't have an account? Click here to Create an Account
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => useNavigation().goToResetPassword()}>
+      <TouchableOpacity onPress={() => navigator.goToResetPassword()}>
         <Text style={styles.link}>
           Forgot Password? Click here to Reset your Password.
         </Text>

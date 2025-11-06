@@ -9,11 +9,13 @@ export default function AccountSettings({ params }: { params: any }) {
     password: 'pass123',
   });
 
+  const navigator = useNavigation();
+
   const handleSave = () => {
     console.log('Saved user info:', user);
     alert('Changes saved!');
-    useNavigation().goBack();
-    useNavigation().goToDashboard({ user: JSON.stringify(user) });
+    navigator.goBack();
+    navigator.goToDashboard({ user: JSON.stringify(user) });
   };
 
   return (

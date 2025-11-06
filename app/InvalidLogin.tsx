@@ -1,12 +1,17 @@
 // InvalidLogin.js
+import { useRoute } from '@react-navigation/native';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useNavigation } from './hooks/useNavigation';
 
-export default function InvalidLogin( errorMessage?: string) {
+export default function InvalidLogin() {
+    const route = useRoute();
+    const navigator = useNavigation();
 
+    var { errorMessage }: { errorMessage ?: string } = route.params || {};
+    
     if (!errorMessage) {
-        errorMessage = "Please check your email and password and try again."
+        errorMessage = "Please check your email and password and try again.";
     }
   return (
     <View style={styles.container}>
@@ -15,7 +20,7 @@ export default function InvalidLogin( errorMessage?: string) {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={() => useNavigation().goToLogin()}
+        onPress={() => navigator.goToLogin()}
       >
         <Text style={styles.buttonText}>Back to Login</Text>
       </TouchableOpacity>

@@ -1,11 +1,16 @@
 // ResetPassword.js
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ConfirmType } from './Confirm';
+import { useAuthenticator } from './hooks/useAuthenticator';
 import { useNavigation } from './hooks/useNavigation';
 
 export default function ResetPassword() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const navigator = useNavigation();
+  const authenticator = useAuthenticator();
 
   const validateEmail = (e: string) => {
     // Email regex
@@ -19,27 +24,19 @@ export default function ResetPassword() {
     }
 
     setLoading(true);
-
     try {
-      // Replace URL with backend endpoint
-      const res = await fetch('http://localhost:4000/request-password-reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-
-      const json = await res.json();
-
-      if (res.ok) {
-        // navigate to confirmation screen (or show alert)
-        //TODO: create ResetConfirmation screen
-        //useNavigation().goToResetConfirmation({ email });
-      } else {
-        Alert.alert('Error', json.message || 'Unable to send reset email.');
-      }
+        const response = await authenticator.resetPassword(email);
+        switch (response.nextStep.resetPasswordStep) {
+            case "CONFIRM_RESET_PASSWORD_WITH_CODE":
+                navigator.goToConfirm({type: ConfirmType.RESET_PASSWORD, username: email});
+                break;
+            case "DONE":
+                navigator.goToLogin();
+            default:
+                break;
+        }
     } catch (err) {
-      console.log(err);
-      Alert.alert('Network Error', 'Could not reach the server. Try again later.');
+      useNavigation().goToInvalidLogin({errorMessage: (err as any).toString()});
     } finally {
       setLoading(false);
     }
@@ -64,7 +61,7 @@ export default function ResetPassword() {
         {loading ? <ActivityIndicator /> : <Text style={styles.buttonText}>SEND RESET LINK</Text>}
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => useNavigation().goBack()}>
+      <TouchableOpacity onPress={() => navigator.goToLogin()}>
         <Text style={styles.link}>Back to Login</Text>
       </TouchableOpacity>
     </View>
