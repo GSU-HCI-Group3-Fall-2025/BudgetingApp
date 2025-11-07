@@ -1,130 +1,73 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { generateClient } from "aws-amplify/data";
+import type { Schema } from "../../amplify/data/resource";
 import { BudgetData } from "../Expenses";
 import { ValidationResult } from "../SignUp";
 
-const client = new DynamoDBClient({
-    region: process.env.AWS_REGION || "us-east-1",
-    ...(process.env.NODE_ENV === 'development' && 
-        process.env.AWS_ACCESS_KEY_ID && 
-        process.env.AWS_SECRET_ACCESS_KEY && {
-        credentials: {
-            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-        }
-    })
-});
+const client = generateClient<Schema>();
 
-const docClient = DynamoDBDocumentClient.from(client);
-
-export const getIncome = async(userId: string) : Promise<number> => {
-    const command = new GetCommand({
-        TableName: "UserProfiles",
-        Key: { userId }
-    })
-
-    const response = await docClient.send(command)
-    const income = parseFloat(response.Item?.income)
-    return income || 0
-}
-
-export const getSavings = async(userId: string) : Promise<number> => {
-    const command = new GetCommand({
-        TableName: "UserProfiles",
-        Key: { userId }
-    });
-
-    const response = await docClient.send(command)
-    const savingsGoal = parseFloat(response.Item?.savingsGoal)
-
-    return savingsGoal || 0
-}
-
-export const updateIncome = async(userId: string, newIncome: number) : Promise<ValidationResult> => {
-    const command = new UpdateCommand({
-        TableName: "UserProfiles",
-        Key: { userId },
-        UpdateExpression: "SET income = :income",
-        ExpressionAttributeValues: {
-            ":income": newIncome
-        }
-    });
-
-    var response;
-
+export const getIncome = async(userId: string): Promise<number> => {
     try {
-        response = await docClient.send(command);
-        console.log("Update Success Response", response);
-        return {isValid: true, message: "Successful Income Update"};
+        const response = await client.models.UserProfile.get({ id: userId });
+        return response.data?.income || 0;
     } catch (error) {
-        console.error(error);
-         console.log("Update Failure Response", response);
-        return {isValid: false, message: "Could not update!"};
+        console.error("Failed to get income:", error);
+        return 0;
     }
 }
 
-export const getBudget = async (userId: string) : Promise<BudgetData> => {
-    const command = new GetCommand({
-        TableName: "UserProfiles",
-        Key: { userId },
-        ProjectionExpression: "variableBudgets, fixedBudgets",
-    });
-    
+export const getSavings = async(userId: string): Promise<number> => {
     try {
-        const response = await docClient.send(command);
-        if (response.Item) {
-            return { variableBudgets: response.Item.variableBudgets || {}, fixedBudgets: response.Item.fixedBudgets || {} }
-        } else {
-            console.log("Item not found");
-            return { variableBudgets : {}, fixedBudgets: {} }
-        }
+        const response = await client.models.UserProfile.get({ id: userId });
+        return response.data?.savingsGoal || 0;
     } catch (error) {
-        console.error("GetCommand Failed:", error);
-        throw error;
+        console.error("Failed to get savings:", error);
+        return 0;
+    }
+}
+
+export const updateIncome = async(userId: string, newIncome: number): Promise<ValidationResult> => {
+    try {
+        await client.models.UserProfile.update({ 
+            id: userId, 
+            income: newIncome 
+        });
+        return { isValid: true, message: "Successful Income Update" };
+    } catch (error) {
+        console.error("Failed to update income:", error);
+        return { isValid: false, message: "Could not update!" };
+    }
+}
+
+export const getBudget = async (userId: string): Promise<BudgetData> => {
+    try {
+        const response = await client.models.UserProfile.get({ id: userId });
+        const data = response.data;
+        
+        return {
+            variableBudgets: data?.variableBudgets as { [key: string]: number } || {},
+            fixedBudgets: data?.fixedBudgets as { [key: string]: number } || {}
+        };
+    } catch (error) {
+        console.error("Failed to get budget:", error);
+        return { variableBudgets: {}, fixedBudgets: {} };
     }
 };
 
 export const updateBudget = async (userId: string, data: BudgetData): Promise<boolean> => {
-     var command;
-     
-     if (data.fixedBudgets && data.variableBudgets){
-        command = new UpdateCommand({
-            TableName: "UserProfiles",
-            Key: { userId },
-            UpdateExpression: "SET variableBudgets = :vb, fixedBudgets = :fb",
-            ExpressionAttributeValues: {
-                ":vb" : data.variableBudgets,
-                ":fb": data.fixedBudgets,
-            }
-        });
-     } else if (data.fixedBudgets) {
-        command = new UpdateCommand({
-            TableName: "UserProfiles",
-            Key: { userId },
-            UpdateExpression: "SET fixedBudgets = :fb",
-            ExpressionAttributeValues: {
-                ":fb": data.fixedBudgets,
-            }
-        });
-     } else if (data.variableBudgets) {
-       command = new UpdateCommand({
-            TableName: "UserProfiles",
-            Key: { userId },
-            UpdateExpression: "SET variableBudgets = :vb",
-            ExpressionAttributeValues: {
-                ":vb" : data.variableBudgets,
-            }
-        });
-     } else {
-        return true;
-     }
-
     try {
-        const response = await docClient.send(command);
-        console.log("UpdateCommand Success:", response);
+        const updateData: any = { id: userId };
+        
+        if (data.variableBudgets) {
+            updateData.variableBudgets = data.variableBudgets;
+        }
+        if (data.fixedBudgets) {
+            updateData.fixedBudgets = data.fixedBudgets;
+        }
+        
+        await client.models.UserProfile.update(updateData);
         return true;
     } catch (error) {
-        console.error("UpdateCommand Failed:", error);
+        console.error("Failed to update budget:", error);
         return false;
     }
 };

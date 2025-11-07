@@ -3,15 +3,10 @@ import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 const schema = a.schema({
   UserProfile: a
     .model({
-      userId: a.id().required(),
       income: a.float(),
       savingsGoal: a.float(),
-      variableBudgets: a.customType({
-        // Define the structure or leave flexible for any key-value pairs
-      }),
-      fixedBudgets: a.customType({
-        // Define the structure or leave flexible for any key-value pairs  
-      }),
+      variableBudgets: a.json(),
+      fixedBudgets: a.json(),
     })
     .authorization((allow) => [allow.guest()]),
 });
