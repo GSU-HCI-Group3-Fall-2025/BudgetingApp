@@ -35,8 +35,10 @@ export default function Dashboard() {
         } else {
             try {
             const newUser = await authenticator.getUser();
+            console.log("new User", newUser);
             setUser({...user, userId: newUser.userId})
             const income = await getIncome(newUser.userId);
+            console.log("Income", income)
             setIncome(income)
             } catch (error) {
                 console.error(error);

@@ -8,6 +8,7 @@ const client = generateClient<Schema>();
 export const getIncome = async(userId: string): Promise<number> => {
     try {
         const response = await client.models.UserProfile.get({ id: userId });
+        console.log("Income Response", response)
         return response.data?.income || 0;
     } catch (error) {
         console.error("Failed to get income:", error);
@@ -42,10 +43,20 @@ export const getBudget = async (userId: string): Promise<BudgetData> => {
     try {
         const response = await client.models.UserProfile.get({ id: userId });
         const data = response.data;
+
+        console.log("data", data);
+        
+        const parseJsonSafely = (jsonString: any) => {
+            try {
+                return typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString || {};
+            } catch {
+                return {};
+            }
+        };
         
         return {
-            variableBudgets: data?.variableBudgets as { [key: string]: number } || {},
-            fixedBudgets: data?.fixedBudgets as { [key: string]: number } || {}
+            variableBudgets: parseJsonSafely(data?.variableBudgets),
+            fixedBudgets: parseJsonSafely(data?.fixedBudgets)
         };
     } catch (error) {
         console.error("Failed to get budget:", error);
@@ -58,13 +69,15 @@ export const updateBudget = async (userId: string, data: BudgetData): Promise<bo
         const updateData: any = { id: userId };
         
         if (data.variableBudgets) {
-            updateData.variableBudgets = data.variableBudgets;
+            console.log("Variable Budgets", data.variableBudgets)
+            updateData.variableBudgets = JSON.stringify(data.variableBudgets);
         }
         if (data.fixedBudgets) {
             updateData.fixedBudgets = data.fixedBudgets;
         }
         
-        await client.models.UserProfile.update(updateData);
+        const resp = await client.models.UserProfile.update(updateData);
+        console.log("Update", resp)
         return true;
     } catch (error) {
         console.error("Failed to update budget:", error);

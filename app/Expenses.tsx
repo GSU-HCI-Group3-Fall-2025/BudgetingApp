@@ -117,6 +117,7 @@ useEffect(() => {
     }, {});
 
     try {
+        //console.log("Budget", variableBudgets);
         const success = await updateBudget(userId, { variableBudgets: variableBudgets })
         if (success) {
             Alert.alert("Success", "Your budgets have been saved successfully!");

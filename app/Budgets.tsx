@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { getBudget, updateBudget as saveBudget } from './api/budgetAPI';
 
-const categories = ['Groceries', 'Entertainment', 'Shopping', 'Dining', 'Transport'];
+const categories: string[] = [];
 
 interface Budget {
     title: string;
@@ -43,6 +43,7 @@ export default function Budgets({ userId, income, expenses, onBudgetChange }: Bu
         const loadBudget = async () => {
             try {
                 const budget = await getBudget(userId);
+                //console.log("budget", budget);
                 setBudgetData(budget);
                 
                 // Update budgets with data from DB, default to 0

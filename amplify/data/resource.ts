@@ -8,8 +8,12 @@ const schema = a.schema({
       savingsGoal: a.float(),
       variableBudgets: a.json(),
       fixedBudgets: a.json(),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime(),
     })
-    .authorization((allow) => [allow.guest()]),
+    .authorization((allow) => [
+      allow.authenticated() // Any authenticated user can access
+    ]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -17,6 +21,6 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: 'identityPool',
+    defaultAuthorizationMode: 'userPool',
   },
 });
