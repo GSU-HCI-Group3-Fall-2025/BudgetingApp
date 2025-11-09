@@ -105,3 +105,38 @@ export const updateBudget = async (userId: string, data: BudgetData): Promise<bo
         return false;
     }
 };
+
+export const getProfile = async (userId: string): Promise<Schema["UserProfile"]["type"]> => {
+    try {
+        const response = await client.models.UserProfile.get({ id: userId });
+        if (response.data) {
+            return response.data;
+        } else {
+            throw new Error("User profile not found");
+        }
+    } catch (error) {
+        console.error("Failed to get profile:", error);
+        throw error;
+    }
+}
+
+
+export const updateProfile = async (userId: string, firstName?: string, lastName?: string): Promise<boolean> => {
+    try {
+        const updateData: any = { id: userId };
+        
+        if (firstName !== undefined) {
+            updateData.firstName = firstName;
+        }
+        if (lastName !== undefined) {
+            updateData.lastName = lastName;
+        }
+        
+        const resp = await client.models.UserProfile.update(updateData);
+        console.log("Update Profile", resp)
+        return true;
+    } catch (error: any) {
+        console.error("Failed to update profile:", error);
+        return false;
+    }
+}
