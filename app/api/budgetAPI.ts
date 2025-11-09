@@ -77,9 +77,30 @@ export const updateBudget = async (userId: string, data: BudgetData): Promise<bo
         }
         
         const resp = await client.models.UserProfile.update(updateData);
+        if (resp.errors) {
+             try {
+                const createData = {
+                    id: userId,
+                    income: 0,
+                    savingsGoal: 0,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    variableBudgets: data.variableBudgets ? JSON.stringify(data.variableBudgets) : undefined,
+                    fixedBudgets: data.fixedBudgets || undefined
+                };
+                
+                const createResp = await client.models.UserProfile.create(createData);
+                console.log("Created", createResp);
+                return true;
+            } catch (createError) {
+                console.error("Failed to create budget:", createError);
+                return false;
+            }
+        }
         console.log("Update", resp)
         return true;
-    } catch (error) {
+    } catch (error: any) {
+        // If update fails because record doesn't exist, create it
         console.error("Failed to update budget:", error);
         return false;
     }

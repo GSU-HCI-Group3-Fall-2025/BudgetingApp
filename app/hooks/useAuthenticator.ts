@@ -1,10 +1,5 @@
-import { Amplify } from "aws-amplify";
 import { confirmResetPassword, ConfirmResetPasswordInput, confirmSignIn, ConfirmSignInInput, ConfirmSignInOutput, confirmSignUp, ConfirmSignUpInput, ConfirmSignUpOutput, getCurrentUser, GetCurrentUserOutput, resetPassword, ResetPasswordOutput, signIn, SignInOutput, signOut, signUp, SignUpOutput } from 'aws-amplify/auth';
 import { User } from "../SignUp";
-
-import outputs from "../../amplify_outputs.json";
-
-Amplify.configure(outputs);
 
 export const useAuthenticator = () => {
     
