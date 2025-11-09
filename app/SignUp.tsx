@@ -77,7 +77,9 @@ export default function SignUp() {
         try {
             const metadata = {
                 income: user.income,
-                savingsGoal: user.savingsGoal
+                savingsGoal: user.savingsGoal,
+                firstName: user.firstName || "",
+                lastName: user.lastName || ""
             };
 
             setClientMetadata(metadata);

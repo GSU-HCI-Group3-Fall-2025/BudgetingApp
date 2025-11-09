@@ -56,7 +56,7 @@ async function findUserProfileTable(): Promise<string> {
 }
 
 export const handler: PostConfirmationTriggerHandler = async (event) => {
-    const { income, savingsGoal } = event.request.clientMetadata || {};
+    const { income, savingsGoal, firstName, lastName } = event.request.clientMetadata || {};
     
     console.log('Creating user profile for:', event.request.userAttributes.sub);
     
@@ -66,6 +66,8 @@ export const handler: PostConfirmationTriggerHandler = async (event) => {
         const item = {
             id: event.request.userAttributes.sub,
             email: event.request.userAttributes.email,
+            firstName: firstName || '',
+            lastName: lastName || '',
             income: income ? parseFloat(income) : 0,
             savingsGoal: savingsGoal ? parseFloat(savingsGoal) : 0,
             createdAt: new Date().toISOString(),
