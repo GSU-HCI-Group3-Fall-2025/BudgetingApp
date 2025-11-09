@@ -1,9 +1,59 @@
-import { DynamoDBClient, ListTablesCommand } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { GetResourcesCommand, ResourceGroupsTaggingAPIClient } from '@aws-sdk/client-resource-groups-tagging-api';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
 import type { PostConfirmationTriggerHandler } from 'aws-lambda';
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
+const taggingClient = new ResourceGroupsTaggingAPIClient({});
+
+let cachedTableName: string | null = null;
+
+async function findUserProfileTable(): Promise<string> {
+    if (cachedTableName) {
+        return cachedTableName;
+    }
+    
+    try {
+        // Get the app-id from the Lambda function's environment
+        const functionName = process.env.AWS_LAMBDA_FUNCTION_NAME || '';
+        const appId = 'd3fgew73asr4zf'; // Your correct app ID
+        
+        console.log('Looking for UserProfile table for app-id:', appId);
+        
+        // Find table by Amplify app-id tag
+        const command = new GetResourcesCommand({
+            ResourceTypeFilters: ['dynamodb:table'],
+            TagFilters: [
+                {
+                    Key: 'amplify:app-id',
+                    Values: [appId]
+                }
+            ]
+        });
+        
+        const response = await taggingClient.send(command);
+        
+        // Find the UserProfile table for this specific app
+        const userProfileTable = response.ResourceTagMappingList?.find(resource => 
+            resource.ResourceARN?.includes('UserProfile-') && 
+            resource.ResourceARN?.includes('-NONE')
+        );
+        
+        if (userProfileTable?.ResourceARN) {
+            const tableName = userProfileTable.ResourceARN.split('/').pop() || '';
+            console.log('Found correct UserProfile table:', tableName);
+            cachedTableName = tableName;
+            return tableName;
+        }
+        
+        throw new Error(`No UserProfile table found for Amplify app: ${appId}`);
+        
+    } catch (error) {
+        console.error('Error finding UserProfile table:', error);
+        throw error;
+    }
+}
 
 export const handler: PostConfirmationTriggerHandler = async (event) => {
     const { income, savingsGoal } = event.request.clientMetadata || {};
@@ -34,29 +84,3 @@ export const handler: PostConfirmationTriggerHandler = async (event) => {
     
     return event;
 };
-
-async function findUserProfileTable(): Promise<string> {
-    try {
-        const command = new ListTablesCommand({});
-        const response = await client.send(command);
-        
-        // Filter for UserProfile tables that match the pattern
-        const userProfileTables = response.TableNames?.filter(tableName => 
-            tableName.startsWith('UserProfile-') && 
-            tableName.endsWith('-NONE')
-        ) || [];
-        
-        if (userProfileTables.length === 0) {
-            throw new Error('No UserProfile tables found');
-        }
-        
-        // If multiple tables, you might want to check which one is active
-        // For now, return the first one
-        console.log('Found UserProfile tables:', userProfileTables);
-        return userProfileTables[0];
-        
-    } catch (error) {
-        console.error('Error listing tables:', error);
-        throw error;
-    }
-}
