@@ -10,6 +10,7 @@ const schema = a.schema({
       savingsGoal: a.float(),
       variableBudgets: a.json(),
       fixedBudgets: a.json(),
+      joinedChallenges: a.json(),
       createdAt: a.datetime(),
       updatedAt: a.datetime(),
     })

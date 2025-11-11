@@ -1,5 +1,6 @@
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "../../amplify/data/resource";
+import { Challenge } from "../Challenges";
 import { BudgetData } from "../Expenses";
 import { ValidationResult } from "../SignUp";
 
@@ -138,5 +139,47 @@ export const updateProfile = async (userId: string, firstName?: string, lastName
     } catch (error: any) {
         console.error("Failed to update profile:", error);
         return false;
+    }
+}
+
+export const updateChallenges = async(userId: string, joinedChallenges: Challenge[]): Promise<boolean> => {
+    try {
+        const updateData: any = { id: userId };
+        updateData.joinedChallenges = JSON.stringify(joinedChallenges);
+        
+        const resp = await client.models.UserProfile.update(updateData);
+        if (resp.errors) {
+            console.error("Errors in response:", resp.errors);
+            return false;
+        }
+        console.log("Update Challenges", resp)
+    } catch (error: any) {
+        console.error("Failed to update challenges:", error);
+        return false;
+    }
+
+    return true;
+}
+
+export const getChallenges = async(userId: string): Promise<Challenge[]> => {
+    try {
+        const response = await client.models.UserProfile.get({ id: userId });
+        const data = response.data;
+        
+        if (data?.joinedChallenges) {
+            console.log("Challenges found for user");
+            try {
+                const challenges = typeof data.joinedChallenges === 'string' ? JSON.parse(data.joinedChallenges) : data.joinedChallenges;
+                return challenges;
+            } catch {
+                return [];
+            }
+        } else {
+            console.log("No challenges found for user");
+            return [];
+        }
+    } catch (error) {
+        console.error("Failed to get challenges:", error);
+        return [];
     }
 }

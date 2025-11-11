@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { getIncome, updateIncome } from './api/budgetAPI';
 import Budgets from './Budgets';
+import Challenges from './Challenges';
 import Expenses from './Expenses';
 import { useAuthenticator } from './hooks/useAuthenticator';
 import { useNavigation } from './hooks/useNavigation';
@@ -132,7 +133,7 @@ export default function Dashboard() {
 
       {/* Tabs */}
       <View style={styles.tabBar}>
-        {['Dashboard', 'Budgets', 'Expenses', 'Reports'].map((tab) => (
+        {['Dashboard', 'Budgets', 'Expenses', 'Reports', 'Challenges'].map((tab) => (
           <TouchableOpacity
             key={tab}
             style={[styles.tabButton, activeTab === tab && styles.activeTab]}
@@ -200,6 +201,7 @@ export default function Dashboard() {
         {activeTab === 'Budgets' && <Budgets userId={user.userId} income={income} expenses={spending} onBudgetChange={setSpending}/>}
         {activeTab === 'Expenses' && <Expenses userId={user.userId} />}
         {activeTab === 'Reports' && <Reports />}
+        {activeTab === 'Challenges' && <Challenges userId={user.userId} />}
       </ScrollView>
     </View>
   );
