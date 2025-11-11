@@ -122,18 +122,13 @@ export const getProfile = async (userId: string): Promise<Schema["UserProfile"][
 }
 
 
-export const updateProfile = async (userId: string, firstName?: string, lastName?: string): Promise<boolean> => {
-    try {
-        const updateData: any = { id: userId };
-        
-        if (firstName !== undefined) {
-            updateData.firstName = firstName;
-        }
-        if (lastName !== undefined) {
-            updateData.lastName = lastName;
-        }
-        
-        const resp = await client.models.UserProfile.update(updateData);
+export const updateProfile = async (userId: string, firstName: string, lastName: string): Promise<boolean> => {
+    try {        
+        const resp = await client.models.UserProfile.update({
+            id: userId,
+            firstName: firstName,
+            lastName: lastName,
+        });
         console.log("Update Profile", resp)
         return true;
     } catch (error: any) {
