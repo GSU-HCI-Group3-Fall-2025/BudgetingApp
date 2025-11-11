@@ -13,8 +13,7 @@ export interface User {
     savingsGoal: string;  // Keeping as string based on your component logic
 }
 
-// --- NEW VALIDATION FUNCTION ---
-interface ValidationResult {
+export interface ValidationResult {
     isValid: boolean;
     message: string;
 }
@@ -78,7 +77,9 @@ export default function SignUp() {
         try {
             const metadata = {
                 income: user.income,
-                savingsGoal: user.savingsGoal
+                savingsGoal: user.savingsGoal,
+                firstName: user.firstName || "",
+                lastName: user.lastName || ""
             };
 
             setClientMetadata(metadata);

@@ -32,6 +32,7 @@ export default function Confirm() {
                 break;
             case ConfirmType.SIGN_UP_CODE:
                 //console.log("Verification Code", code);
+                console.log("Client Metadata", getClientMetadata())
                 response = await authenticator.confirmSignUp({ username: username || "", confirmationCode: code, options: { clientMetadata: getClientMetadata() || {}} });
                 handleAuth(response, {email: username || "", pword: newPassword, income: "0", savingsGoal: "0"});
                 break;
@@ -55,6 +56,7 @@ export default function Confirm() {
         }
         //console.log("Confirm response", response);
     } catch (error: any) {
+        console.log("SignUP Error", error)
         Alert.alert('Error', error.message);
     }
 };

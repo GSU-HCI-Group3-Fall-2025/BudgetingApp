@@ -1,55 +1,52 @@
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
+import { updateProfile } from "./api/budgetAPI";
 import { useNavigation } from './hooks/useNavigation';
 
-export default function AccountSettings({ params }: { params: any }) {
-  const [user, setUser] = useState( params?.user || {
-    name: 'Test User',
-    email: 'testuser@gmail.com',
-    password: 'pass123',
+export default function AccountSettings({ userId } : {userId: string}) {    
+  const [user, setUser] = useState({
+    firstName: '',
+    lastName: '',
   });
 
   const navigator = useNavigation();
 
   const handleSave = () => {
-    console.log('Saved user info:', user);
+    //console.log('Saved user info:', user);
+    updateProfile(userId, user.firstName, user.lastName);
     alert('Changes saved!');
-    navigator.goBack();
     navigator.goToDashboard({ user: JSON.stringify(user) });
   };
+
+    const handleCancel = () => {
+        navigator.goToDashboard({ user: JSON.stringify(user) });
+    }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Account Settings</Text>
 
-      {/* Name */}
-      <Text style={styles.label}>Name</Text>
+      {/* First Name */}
+      <Text style={styles.label}>First Name</Text>
       <TextInput
         style={styles.input}
-        value={user.name}
-        onChangeText={(text) => setUser({ ...user, name: text })}
+        value={user.firstName}
+        onChangeText={(text) => setUser({ ...user, firstName: text })}
       />
 
-      {/* Email */}
-      <Text style={styles.label}>Email</Text>
+    {/* Last Name */}
+      <Text style={styles.label}>Last Name</Text>
       <TextInput
         style={styles.input}
-        value={user.email}
-        onChangeText={(text) => setUser({ ...user, email: text })}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-
-      {/* Password */}
-      <Text style={styles.label}>Password</Text>
-      <TextInput
-        style={styles.input}
-        value={user.password}
-        onChangeText={(text) => setUser({ ...user, password: text })}
-        secureTextEntry
+        value={user.lastName}
+        onChangeText={(text) => setUser({ ...user, lastName: text })}
       />
 
       {/* Save Button */}
+      <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+        <Text style={styles.cancelButtonText}>Cancel</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
         <Text style={styles.saveButtonText}>Save Changes</Text>
       </TouchableOpacity>
@@ -91,9 +88,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25, 
     borderRadius: 8 
   },
+  cancelButton: { 
+    marginTop: 20, 
+    backgroundColor: '#cb2323ff', 
+    paddingVertical: 12, 
+    paddingHorizontal: 25, 
+    borderRadius: 8 
+  },
   saveButtonText: { 
     fontSize: 16, 
     fontWeight: '600', 
     color: '#000' 
+  },
+  cancelButtonText: { 
+    fontSize: 16, 
+    fontWeight: '600', 
+    color: '#fff' 
   },
 });

@@ -1,7 +1,9 @@
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { getIncome, updateIncome } from './api/budgetAPI';
 import Budgets from './Budgets';
+import Challenges from './Challenges';
 import Expenses from './Expenses';
 import { useAuthenticator } from './hooks/useAuthenticator';
 import { useNavigation } from './hooks/useNavigation';
@@ -9,18 +11,19 @@ import Reports from './Reports';
 import { checkIsAuthenticated } from './utils/AuthUtils';
 
 export default function Dashboard() {
+  const [user, setUser] = useState({
+    email: '',
+    userId: ""
+  });
+
   const [income, setIncome] = useState(0);
   const [spending, setSpending] = useState(0);
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [editingIncome, setEditingIncome] = useState(false);
-
-  const [user, setUser] = useState({
-    name: 'Test User',
-    email: 'testuser@gmail.com',
-    password: 'pass123',
-  });
+  const [isSaving, setIsSaving] = useState(false);
 
   const navigator = useNavigation();
+  const authenticator = useAuthenticator();
 
     useEffect(() => {
         checkAuthState();
@@ -29,16 +32,70 @@ export default function Dashboard() {
     const checkAuthState = async () => {
         const isAuth = await checkIsAuthenticated();
         if (!isAuth) {
-        router.replace("/Login");
+            router.replace("/Login");
+        } else {
+            try {
+            const newUser = await authenticator.getUser();
+            console.log("new User", newUser);
+            setUser({...user, userId: newUser.userId})
+            const income = await getIncome(newUser.userId);
+            console.log("Income", income)
+            setIncome(income)
+            } catch (error) {
+                console.error(error);
+            }
         }
     };
   
     const { signOut } = useAuthenticator(); 
-
     const handleLogout = () => {
         signOut();
         navigator.goToLogin();
     }
+
+    const handleSave = async () => {
+        const response = await updateIncome(user.userId, income)
+        if (!response.isValid) {
+            Alert.alert(
+                'Validation Error', 
+                response.message,
+                [{ text: 'OK' }],
+                { cancelable: false }
+            );
+            return;
+        }
+
+        Alert.alert(
+            "Successful Update",
+            response.message,
+            [{ text: 'OK' }],
+            { cancelable: false }
+        );
+    }
+
+    const handleToggle = async () => {
+    // If the button says 'Save'
+    if (editingIncome) {
+        if (isSaving) return; // Guard against rapid clicks
+
+        setIsSaving(true);
+        
+        try {
+            await handleSave();
+        } catch (error) {
+            console.error("Error during income save:", error);
+            Alert.alert("Error", "Failed to save income. Please try again.");
+        } finally {
+            // End saving, stop editing
+            setIsSaving(false);
+            setEditingIncome(false);
+        }
+    } else {
+        // If the button says 'Edit', start editing
+        console.log("Start Editing");
+        setEditingIncome(true);
+    }
+};
 
   const remainingBudget = income - spending;
 
@@ -48,7 +105,7 @@ export default function Dashboard() {
       <View style={styles.topRow}>
         <TouchableOpacity
             style={styles.settingsButton}
-            onPress={() => navigator.goToAccountSettings({ user })}
+            onPress={() => navigator.goToAccountSettings({ userId: user.userId || "" })}
         >
             <Text style={styles.settingsText}>⚙️</Text>
         </TouchableOpacity>
@@ -76,7 +133,7 @@ export default function Dashboard() {
 
       {/* Tabs */}
       <View style={styles.tabBar}>
-        {['Dashboard', 'Budgets', 'Expenses', 'Reports'].map((tab) => (
+        {['Dashboard', 'Budgets', 'Expenses', 'Reports', 'Challenges'].map((tab) => (
           <TouchableOpacity
             key={tab}
             style={[styles.tabButton, activeTab === tab && styles.activeTab]}
@@ -95,26 +152,39 @@ export default function Dashboard() {
           <View style={styles.dashboardContent}>
             <View style={styles.infoBox}>
               <Text style={styles.infoLabel}>Total Monthly Income</Text>
-              {editingIncome ? (
+              <View style={styles.valueRow}>
+             {editingIncome ? (
                 <TextInput
-                  style={styles.inputBox}
-                  keyboardType="numeric"
-                  value={income.toString()}
-                  onChangeText={(text) => setIncome(Number(text))}
-                  onBlur={() => setEditingIncome(false)}
-                  autoFocus
+                    style={styles.inputBox}
+                    keyboardType="numeric"
+                    value={income.toString()}
+                    onChangeText={(text) => {
+                        const numericText = text.replace(/[^0-9.]/g, '');
+                        const newIncome = numericText ? Number(numericText) : 0;
+                        setIncome(newIncome);
+                    }}
+                    autoFocus
                 />
               ) : (
                 <View style={styles.valueRow}>
                   <Text style={styles.infoValue}>${income.toFixed(2)}</Text>
-                  <TouchableOpacity
-                    style={styles.editButton}
-                    onPress={() => setEditingIncome(true)}
-                  >
-                    <Text style={styles.editText}>Edit</Text>
-                  </TouchableOpacity>
                 </View>
               )}
+
+             <TouchableOpacity
+                style={[
+                    styles.editButton,
+                    // Apply a disabled style when saving
+                    isSaving && styles.editButtonDisabled 
+                ]}
+                onPress={handleToggle}
+                disabled={isSaving} // Disable when a save operation is in progress
+              >
+                <Text style={[styles.editText, isSaving && styles.editTextSaving]}>
+                    {isSaving ? 'Saving...' : editingIncome ? 'Save' : 'Edit'}
+                </Text>
+            </TouchableOpacity>
+              </View>
             </View>
 
             <View style={styles.infoBox}>
@@ -128,9 +198,10 @@ export default function Dashboard() {
           </View>
         )}
 
-        {activeTab === 'Budgets' && <Budgets />}
-        {activeTab === 'Expenses' && <Expenses onTotalChange={setSpending} />}
+        {activeTab === 'Budgets' && <Budgets userId={user.userId} income={income} expenses={spending} onBudgetChange={setSpending}/>}
+        {activeTab === 'Expenses' && <Expenses userId={user.userId} />}
         {activeTab === 'Reports' && <Reports />}
+        {activeTab === 'Challenges' && <Challenges userId={user.userId} />}
       </ScrollView>
     </View>
   );
@@ -161,9 +232,16 @@ const styles = StyleSheet.create({
   infoBox: { width: '70%', backgroundColor: '#fff', padding: 20, borderRadius: 12, marginBottom: 15, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 3 },
   infoLabel: { fontSize: 16, fontWeight: '600', color: '#2E7D32', marginBottom: 10 },
   infoValue: { fontSize: 20, fontWeight: 'bold', color: '#1B5E20' },
-  inputBox: { width: '60%', backgroundColor: '#E0F2F1', padding: 8, borderRadius: 8, textAlign: 'center', fontSize: 18 },
+  inputBox: { width: '60%', backgroundColor: '#E0F2F1', padding: 8, borderRadius: 8, textAlign: 'center', fontSize: 18, },
   valueRow: { flexDirection: 'row', alignItems: 'center' },
   editButton: { backgroundColor: '#43A047', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, marginLeft: 10 },
   editText: { color: '#000', fontWeight: '600' },
   remainingText: { marginTop: 15, fontWeight: '600', fontSize: 16, color: '#2E7D32' },
+  // Add these to your StyleSheet.create({})
+    editButtonDisabled: { 
+    backgroundColor: '#90A4AE', // Gray color for disabled state
+    },
+    editTextSaving: {
+    color: '#E0E0E0', // Lighter text color while saving
+    },
 });
