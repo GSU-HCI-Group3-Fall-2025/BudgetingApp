@@ -64,18 +64,18 @@ export default function Login() {
       </View>
 
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>LOGIN</Text>
+        <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigator.goToSignUp()}>
         <Text style={styles.link}>
-          Don't have an account? Click here to Create an Account
+          Don't have an account? Click here to CREATE AN ACCOUNT.
         </Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigator.goToResetPassword()}>
         <Text style={styles.link}>
-          Forgot Password? Click here to Reset your Password.
+          Forgot Password? Click here to RESET YOUR PASSWORD.
         </Text>
       </TouchableOpacity>
     </View>
@@ -83,72 +83,15 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#E8F5E9',
-  },
-  logo: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#2E7D32',
-    marginBottom: 10,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: '600',
-    color: '#2E7D32',
-    marginBottom: 30,
-  },
-  input: {
-    padding: 12,
-    marginBottom: 15,
-    borderWidth: 2,
-    borderColor: '#000',
-    borderRadius: 12,
-    backgroundColor: '#fff',
-    minWidth: 250,
-    maxWidth: 400,
-    width: '100%',
-  },
-  passwordRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  passwordInput: {
-    flex: 1,
-    marginBottom: 0,
-  },
-  eyeButton: {
-    marginLeft: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-  },
-  eyeText: {
-    fontSize: 14,
-    color: '#1B5E20',
-  },
-  button: {
-    width: '25%',
-    backgroundColor: '#43A047',
-    padding: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  buttonText: {
-    color: '#000',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  link: {
-    marginTop: 15,
-    fontSize: 15,
-    color: '#388E3C',
-    textDecorationLine: 'underline',
-    textAlign: 'center',
-  },
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20, backgroundColor: '#E8F5E9'},
+  logo: { fontSize: 36, fontWeight: 'bold', color: '#2E7D32', marginBottom: 10, },
+  title: { fontSize: 26, fontWeight: '600', color: '#2E7D32', marginBottom: 30, },
+  input: { padding: 12, marginBottom: 15, borderWidth: 2, borderColor: '#000', borderRadius: 12, backgroundColor: '#fff', minWidth: 250, maxWidth: 400, width: '100%', },
+  passwordRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 15, },
+  passwordInput: { flex: 1, marginBottom: 0, },
+  eyeButton: { marginLeft: 8, paddingVertical: 10, paddingHorizontal: 12, },
+  eyeText: { fontSize: 14, color: '#1B5E20', },
+  button: { width: '25%', backgroundColor: '#43A047', padding: 14, borderRadius: 12, alignItems: 'center', marginTop: 10, },
+  buttonText: { color: '#ffffff', fontSize: 18, fontWeight: '600', },
+  link: { marginTop: 15, fontSize: 15, color: '#388E3C', textDecorationLine: 'underline', textAlign: 'center', },
 });

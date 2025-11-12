@@ -1,8 +1,6 @@
 import React, { JSX, useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { getBudget, updateBudget } from './api/budgetAPI';
-
-// Predetermined fixed expenses
+import { getBudgets, updateBudget } from './api/budgetAPI';
 
 export interface BudgetData {
     variableBudgets?: { [key: string]: number };
@@ -25,7 +23,7 @@ export default function Expenses({userId}: {userId: string}) {
 useEffect(() => {
     const loadBudget = async() => {
         try {
-            const budget = await getBudget(userId);
+            const budget = await getBudgets(userId);
             const variableBudgets = budget.variableBudgets || {};
             
             const newExpenses = Object.entries(variableBudgets).map(([title, amount], index) => ({

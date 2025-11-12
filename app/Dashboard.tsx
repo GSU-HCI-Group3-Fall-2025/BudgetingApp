@@ -105,7 +105,7 @@ export default function Dashboard() {
       <View style={styles.topRow}>
         <TouchableOpacity
             style={styles.settingsButton}
-            onPress={() => navigator.goToAccountSettings({ userId: user.userId || "" })}
+            onPress={() => navigator.goToAccountSettings({ userId: user.userId })}
         >
             <Text style={styles.settingsText}>⚙️</Text>
         </TouchableOpacity>
@@ -198,7 +198,7 @@ export default function Dashboard() {
           </View>
         )}
 
-        {activeTab === 'Budgets' && <Budgets userId={user.userId} income={income} expenses={spending} onBudgetChange={setSpending}/>}
+        {activeTab === 'Budgets' && <Budgets userId={user.userId} income={income} onBudgetChange={setSpending}/>}
         {activeTab === 'Expenses' && <Expenses userId={user.userId} />}
         {activeTab === 'Reports' && <Reports />}
         {activeTab === 'Challenges' && <Challenges userId={user.userId} />}

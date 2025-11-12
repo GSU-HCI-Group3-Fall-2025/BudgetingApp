@@ -1,9 +1,14 @@
+import { useRoute } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
 import { getProfile, updateProfile } from "./api/budgetAPI";
 import { useNavigation } from './hooks/useNavigation';
 
-export default function AccountSettings({ userId } : {userId: string}) {    
+export default function AccountSettings() {    
+  const route = useRoute();
+
+  const params = (route.params ?? {}) as { userId?: string };
+  const userId = params.userId ?? "";
   const [user, setUser] = useState({
     firstName: '',
     lastName: '',
