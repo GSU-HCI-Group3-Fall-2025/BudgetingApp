@@ -56,14 +56,14 @@ export default function Reports() {
         data={{
           labels: months2025,
           datasets: [
-            { data: monthlyData.length > 0 ? monthlyData.map(m => m.income) : [0], color: () => '#2E7D32', strokeWidth: 2, },
-            { data: monthlyData.length > 0 ? monthlyData.map(m => m.expenses) : [0], color: () => '#E53935', strokeWidth: 2,},
-            { data: monthlyData.length > 0 ? monthlyData.map(m => m.savings) : [0], color: () => '#43A047', strokeWidth: 2, },
+            { data: monthlyData.length > 0 ? monthlyData.map(m => m.income) : [0], color: () => '#2E7D32', strokeWidth: 3 }, 
+            { data: monthlyData.length > 0 ? monthlyData.map(m => m.expenses) : [0], color: () => '#E53935', strokeWidth: 3 },
+            { data: monthlyData.length > 0 ? monthlyData.map(m => m.savings) : [0], color: () => '#43A047', strokeWidth: 3},
           ],
           legend: ['Income', 'Expenses', 'Savings'],
         }}
         width={screenWidth - 20}
-        height={250}
+        height={300}
         yAxisLabel="$"
         chartConfig={{
           backgroundColor: '#C8E6C9',
@@ -73,7 +73,7 @@ export default function Reports() {
           color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
           labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
           style: { borderRadius: 16 },
-          propsForDots: { r: '5', strokeWidth: '2', stroke: '#1B5E20' },
+          propsForDots: { r: '7', strokeWidth: '3', stroke: '#1B5E20' }
         }}
         style={{ marginVertical: 10, borderRadius: 16 }}
         fromZero
@@ -85,9 +85,9 @@ export default function Reports() {
       {selectedMonth && (
         <View style={styles.detailsBox}>
           <Text style={styles.detailsTitle}>{selectedMonth.month} 2025</Text>
-          <Text>Total Income: ${selectedMonth.income}</Text>
-          <Text>Total Expenses: ${selectedMonth.expenses}</Text>
-          <Text>Savings: ${selectedMonth.savings}</Text>
+          <Text style={styles.detailText}>Total Income: ${selectedMonth.income}</Text>
+          <Text style={styles.detailText}>Total Expenses: ${selectedMonth.expenses}</Text>
+          <Text style={styles.detailText}>Savings: ${selectedMonth.savings}</Text>
           {selectedMonth.advice.good !== '' && (
             <Text style={styles.goodFeedback}>Good: {selectedMonth.advice.good}</Text>
           )}
@@ -110,26 +110,11 @@ export default function Reports() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 10, backgroundColor: '#E8F5E9' },
   title: { fontSize: 22, fontWeight: 'bold', color: '#2E7D32', textAlign: 'center', marginVertical: 10 },
-  detailsBox: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 15,
-    marginVertical: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  detailsTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 5, color: '#1B5E20' },
-  goodFeedback: { color: 'green', fontWeight: '600', marginTop: 5 },
-  improveFeedback: { color: 'red', fontWeight: '600', marginTop: 5 },
-  closeButton: {
-    marginTop: 10,
-    backgroundColor: '#43A047',
-    padding: 10,
-    borderRadius: 8,
-    alignSelf: 'center',
-  },
-  closeText: { color: '#000', fontWeight: '600' },
+  detailsBox: { backgroundColor: '#fff', borderRadius: 12, padding: 15, marginVertical: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 3 },
+  detailsTitle: { fontSize: 20, fontWeight: '700', marginBottom: 8, color: '#1B5E20' },
+  detailText: { fontSize: 20, marginBottom: 4, color: '#2E7D32' },
+  goodFeedback: { color: 'green', fontWeight: '600', marginTop: 6, fontSize: 18 },
+  improveFeedback: { color: 'red', fontWeight: '600', marginTop: 6, fontSize: 18 },
+  closeButton: { marginTop: 12, backgroundColor: '#43A047', padding: 12, borderRadius: 10, alignSelf: 'center' },
+  closeText: { color: '#000', fontWeight: '600', fontSize: 18 },
 });

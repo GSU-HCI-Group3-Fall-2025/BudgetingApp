@@ -1,15 +1,36 @@
-import React, { useState } from 'react';
+import { useRoute } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
-import { updateProfile } from "./api/budgetAPI";
+import { getProfile, updateProfile } from "./api/budgetAPI";
 import { useNavigation } from './hooks/useNavigation';
 
-export default function AccountSettings({ userId } : {userId: string}) {    
+export default function AccountSettings() {    
+  const route = useRoute();
+
+  const params = (route.params ?? {}) as { userId?: string };
+  const userId = params.userId ?? "";
   const [user, setUser] = useState({
     firstName: '',
     lastName: '',
   });
 
   const navigator = useNavigation();
+
+  useEffect(() => {
+    const fetchUserNames = async () => {
+      try {
+        const profile = await getProfile(userId);
+        setUser({
+          firstName: profile.firstName || '',
+          lastName: profile.lastName || '',
+        });
+      } catch (error) {
+        console.error("Failed to fetch user names:", error);
+      }
+    };
+
+    fetchUserNames();
+  }, [userId]);
 
   const handleSave = () => {
     //console.log('Saved user info:', user);

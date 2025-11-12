@@ -1,32 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { getBudget, updateBudget as saveBudget } from './api/budgetAPI';
+import { getBudgets, updateBudget as saveBudget } from './api/budgetAPI';
 
-const categories: string[] = [];
+const categories: Set<String> = new Set(['Rent/Mortgage', 'Transport', 'Utilities', 'Groceries', 'Entertainment', 'Dining', 'Shopping',  'Healthcare', 'Subscriptions']);
 
 interface Budget {
     title: string;
     amount: number;
 }
 
-// Predetermined fixed monthly expenses
-const fixedExpenses = [
-    { category: 'Rent/Mortgage', amount: 800 },
-    { category: 'Gas', amount: 150 },
-    { category: 'Utilities', amount: 120 },
-];
-
 interface BudgetsProps {
     userId: string;
     income: number;
-    expenses: number;
     onBudgetChange: any;
 }
 
-export default function Budgets({ userId, income, expenses, onBudgetChange }: BudgetsProps) {
-    const [budgets, setBudgets] = useState<Budget[]>(categories.map(cat => ({ title: cat, amount: 0 })));
+export default function Budgets({ userId, income, onBudgetChange }: BudgetsProps) {
+    const [fixedBudgets, setFixedBudgets] = useState<Budget[]>( Array.from(categories, cat => ({ title: cat as string, amount: 0 })));
+    const [variableBudgets, setVariableBudgets] = useState<Budget[]>([]);
     const [advice, setAdvice] = useState<string>("");
-    const [budgetData, setBudgetData] = useState<any>({});
     const [isSaving, setIsSaving] = useState(false);
 
     const updateBudget = (index: number, text: string) => {
@@ -34,24 +26,33 @@ export default function Budgets({ userId, income, expenses, onBudgetChange }: Bu
         const numericText = text.replace(/[^0-9.]/g, ''); 
         const amount = parseFloat(numericText) || 0;
 
-        const updated = [...budgets];
+        const updated = [...fixedBudgets];
         updated[index].amount = amount;
-        setBudgets(updated);
+        setFixedBudgets(updated);
     };
 
     useEffect(() => {
         const loadBudget = async () => {
             try {
-                const budget = await getBudget(userId);
-                //console.log("budget", budget);
-                setBudgetData(budget);
-                
-                // Update budgets with data from DB, default to 0
-                const updatedBudgets = Object.entries(budget.variableBudgets || {}).map(([title, amount]) => ({
-                    title: title,
-                    amount: amount
+                const budgets = await getBudgets(userId);
+                //console.log("budget", budgets);
+
+                //List through fixedBudgets and if fetchedBudgets has it, add amount, else 0
+                //console.log("Budgets from API", fixedBudgets);
+                const fixedBudgetsToSet = fixedBudgets.map(f => ({
+                    title: f.title,
+                    amount: budgets.fixedBudgets && budgets.fixedBudgets[f.title] ? budgets.fixedBudgets[f.title] : 0,
                 }));
-                setBudgets(updatedBudgets);
+
+                // Update budgets with data from DB, default to 0
+                const variableBudgetsToSet = Object.entries(budgets.variableBudgets || {}).map(([title, amount]) => ({
+                    title: title,
+                    amount: amount,
+                }));
+
+                //console.log("Fixed Budgets to Set", fixedBudgetsToSet);
+                setFixedBudgets(fixedBudgetsToSet);
+                setVariableBudgets(variableBudgetsToSet);
             } catch (error) {
                 console.error("Failed to load budget data:", error);
             }
@@ -59,32 +60,19 @@ export default function Budgets({ userId, income, expenses, onBudgetChange }: Bu
         loadBudget();
     }, [userId]);
 
-    // Use fixed budgets from DB or defaults
-    const fixedBudgetsFromDB = budgetData.fixedBudgets || {};
-    const displayFixedExpenses = fixedExpenses.map(expense => ({
-        ...expense,
-        amount: fixedBudgetsFromDB[expense.category] || expense.amount
-    }));
-
-    const handleSaveBudget = async () => {
+    const handleSaveFixedBudget = async () => {
         if (isSaving) return;
 
         setIsSaving(true);
-        
+    
         // 1. Prepare data structure for the backend
-        const variableBudgets: { [key: string]: number } = {};
-        budgets.forEach(b => {
-            variableBudgets[b.title] = b.amount;
-        });
-
-        const fixedBudgets: { [key: string]: number } = {};
-        displayFixedExpenses.forEach(f => {
-             fixedBudgets[f.category] = f.amount;
+        const fixedBudgetsToSave: { [key: string]: number } = {};
+        fixedBudgets.forEach(f => {
+             fixedBudgetsToSave[f.title] = f.amount;
         });
 
         const budgetDataToSave = {
-            variableBudgets,
-            fixedBudgets, // Include fixed budgets if your API needs them for completeness
+            fixedBudgets: fixedBudgetsToSave, // Include fixed budgets if your API needs them for completeness
         };
 
         try {
@@ -107,8 +95,8 @@ export default function Budgets({ userId, income, expenses, onBudgetChange }: Bu
     useEffect(() => {
         var newAdvice: string = "";
 
-        const totalFixed = displayFixedExpenses.reduce((sum, f) => sum + f.amount, 0);
-        const totalVariableBudgeted = budgets.reduce((sum, b) => sum + b.amount, 0);
+        const totalFixed = fixedBudgets.reduce((sum, f) => sum + f.amount, 0);
+        const totalVariableBudgeted = variableBudgets.reduce((sum, b) => sum + b.amount, 0);
         const totalBudgeted = totalFixed + totalVariableBudgeted;
         onBudgetChange(totalBudgeted)
 
@@ -128,36 +116,27 @@ export default function Budgets({ userId, income, expenses, onBudgetChange }: Bu
         }
 
         // --- Advice Rule 3: Individual Category Warning (e.g., above 15% of income) ---
-        budgets.forEach(b => {
+        fixedBudgets.forEach(b => {
             if (b.amount > income * 0.15 && income > 0) {
                 newAdvice = (`High Spend: ${b.title} budget ($${b.amount.toFixed(2)}) is over 15% of your total income.`);
             }
         });
 
         setAdvice(newAdvice);
-    }, [budgets, income, displayFixedExpenses]);
+    }, [fixedBudgets, income, variableBudgets]);
 
     return (
-        <View style={{ width: '100%', alignItems: 'center' }}>
+        <View style={styles.container}>
             <Text style={styles.title}>Monthly Budgets</Text>
 
             {/* Fixed Expenses */}
             <Text style={styles.sectionTitle}>Fixed Budgets</Text>
-            {displayFixedExpenses.map((f) => (
-                <View key={f.category} style={styles.budgetItem}>
-                    <Text style={styles.category}>{f.category}</Text>
-                    <Text style={styles.fixedAmount}>${f.amount.toFixed(2)}</Text>
-                </View>
-            ))}
-
-            {/* User Budget Categories */}
-            <Text style={styles.sectionTitle}>Variable Budgets</Text>
             <FlatList
-                data={budgets}
+                data={fixedBudgets}
                 keyExtractor={(item) => item.title}
                 scrollEnabled={false}
                 renderItem={({ item, index }) => (
-                    <View style={styles.budgetItem}>
+                    <View key={item.title} style={styles.budgetItem}>
                         <Text style={styles.category}>{item.title}</Text>
                         <TextInput
                             style={styles.input}
@@ -166,6 +145,20 @@ export default function Budgets({ userId, income, expenses, onBudgetChange }: Bu
                             onChangeText={(text) => updateBudget(index, text)}
                             placeholder="Enter budget"
                         />
+                    </View>
+                )}
+            />
+
+            {/* User Expenses Category */}
+            <Text style={styles.sectionTitle}>Variable Budgets</Text>
+            <FlatList
+                data={variableBudgets}
+                keyExtractor={(item) => item.title}
+                scrollEnabled={false}
+                renderItem={({ item }) => (
+                    <View style={styles.budgetItem}>
+                        <Text style={styles.category}>{item.title}</Text>
+                        <Text style={styles.fixedAmount}>${item.amount.toFixed(2)}</Text>
                     </View>
                 )}
             />
@@ -181,11 +174,11 @@ export default function Budgets({ userId, income, expenses, onBudgetChange }: Bu
 
             <TouchableOpacity 
                 style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
-                onPress={handleSaveBudget}
+                onPress={handleSaveFixedBudget}
                 disabled={isSaving}
             >
                 <Text style={styles.saveButtonText}>
-                    {isSaving ? 'Saving...' : 'Save Budgets'}
+                    {isSaving ? 'Saving...' : 'Save Fixed Budgets'}
                 </Text>
             </TouchableOpacity>
 
@@ -194,16 +187,18 @@ export default function Budgets({ userId, income, expenses, onBudgetChange }: Bu
 }
 
 const styles = StyleSheet.create({
+    container: { flex: 1, padding: 20, backgroundColor: '#E8F5E9' },
     title: { fontSize: 22, fontWeight: 'bold', marginVertical: 10, color: '#2E7D32' },
-    sectionTitle: { fontSize: 18, fontWeight: '600', marginTop: 15, marginBottom: 5, color: '#1B5E20' },
-    budgetItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 5, backgroundColor: '#fff', padding: 12, borderRadius: 8, width: '85%' },
+    sectionTitle: { fontSize: 18, fontWeight: '600', marginTop: 15, marginBottom: 5, color: '#1B5E20', alignSelf: 'center' },
+    budgetItem: { flexDirection: 'row', justifyContent: 'space-between', alignSelf: 'center', marginVertical: 5, backgroundColor: '#fff', padding: 12, borderRadius: 8, width: '85%' },
     category: { fontSize: 16, color: '#2E7D32' },
     input: { backgroundColor: '#E0F2F1', padding: 8, borderRadius: 8, width: 100, textAlign: 'center', fontSize: 16 },
     fixedAmount: { fontSize: 16, fontWeight: '600', color: '#1B5E20' },
-    adviceBox: { marginTop: 15, backgroundColor: '#FFECB3', padding: 10, borderRadius: 8, width: '85%', borderColor: '#BF360C', borderWidth: 1 },
+    adviceBox: { alignSelf: 'center', marginTop: 15, backgroundColor: '#FFECB3', padding: 10, borderRadius: 8, width: '85%', borderColor: '#BF360C', borderWidth: 1 },
     adviceHeader: { fontSize: 16, fontWeight: '700', color: '#BF360C', marginBottom: 5 },
     adviceText: { color: '#BF360C', fontWeight: '500', marginVertical: 2 },
     saveButton: {
+        alignSelf: 'center',
         width: '85%',
         backgroundColor: '#1B5E20',
         padding: 15,

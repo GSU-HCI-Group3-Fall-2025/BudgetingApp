@@ -40,7 +40,7 @@ export const updateIncome = async(userId: string, newIncome: number): Promise<Va
     }
 }
 
-export const getBudget = async (userId: string): Promise<BudgetData> => {
+export const getBudgets = async (userId: string): Promise<BudgetData> => {
     try {
         const response = await client.models.UserProfile.get({ id: userId });
         const data = response.data;
@@ -73,30 +73,16 @@ export const updateBudget = async (userId: string, data: BudgetData): Promise<bo
             console.log("Variable Budgets", data.variableBudgets)
             updateData.variableBudgets = JSON.stringify(data.variableBudgets);
         }
+
         if (data.fixedBudgets) {
-            updateData.fixedBudgets = data.fixedBudgets;
+            console.log("Fixed Budgets", data.fixedBudgets)
+            updateData.fixedBudgets = JSON.stringify(data.fixedBudgets);
         }
         
         const resp = await client.models.UserProfile.update(updateData);
         if (resp.errors) {
-             try {
-                const createData = {
-                    id: userId,
-                    income: 0,
-                    savingsGoal: 0,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                    variableBudgets: data.variableBudgets ? JSON.stringify(data.variableBudgets) : undefined,
-                    fixedBudgets: data.fixedBudgets || undefined
-                };
-                
-                const createResp = await client.models.UserProfile.create(createData);
-                console.log("Created", createResp);
-                return true;
-            } catch (createError) {
-                console.error("Failed to create budget:", createError);
-                return false;
-            }
+            console.error("Errors in response:", resp.errors);
+            return false;
         }
         console.log("Update", resp)
         return true;
@@ -110,6 +96,7 @@ export const updateBudget = async (userId: string, data: BudgetData): Promise<bo
 export const getProfile = async (userId: string): Promise<Schema["UserProfile"]["type"]> => {
     try {
         const response = await client.models.UserProfile.get({ id: userId });
+        console.log("Profile Response", response);
         if (response.data) {
             return response.data;
         } else {
@@ -122,18 +109,13 @@ export const getProfile = async (userId: string): Promise<Schema["UserProfile"][
 }
 
 
-export const updateProfile = async (userId: string, firstName?: string, lastName?: string): Promise<boolean> => {
-    try {
-        const updateData: any = { id: userId };
-        
-        if (firstName !== undefined) {
-            updateData.firstName = firstName;
-        }
-        if (lastName !== undefined) {
-            updateData.lastName = lastName;
-        }
-        
-        const resp = await client.models.UserProfile.update(updateData);
+export const updateProfile = async (userId: string, firstName: string, lastName: string): Promise<boolean> => {
+    try {        
+        const resp = await client.models.UserProfile.update({
+            id: userId,
+            firstName: firstName,
+            lastName: lastName,
+        });
         console.log("Update Profile", resp)
         return true;
     } catch (error: any) {

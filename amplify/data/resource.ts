@@ -4,8 +4,8 @@ const schema = a.schema({
   UserProfile: a
     .model({
       income: a.float(),
-      firstName: a.string(),
-      lastName: a.string(),
+      firstName: a.string().default(''),
+      lastName: a.string().default(''),
       email: a.string(),
       savingsGoal: a.float(),
       variableBudgets: a.json(),

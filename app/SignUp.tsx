@@ -9,8 +9,8 @@ export interface User {
     lastName?: string;
     email: string;
     pword: string;
-    income: string;       // Keeping as string based on your component logic
-    savingsGoal: string;  // Keeping as string based on your component logic
+    income: string;
+    savingsGoal: string;
 }
 
 export interface ValidationResult {
@@ -97,8 +97,8 @@ export default function SignUp() {
 
     return (
     <ScrollView contentContainerStyle={styles.container}>
-    <Text style={styles.logo}>💰 Budget Buddy</Text>
-    <Text style={styles.title}>Create an Account</Text>
+    <Text style={styles.logo}>💰 Budget Buddy 💰</Text>
+    <Text style={styles.title}>Create Account</Text>
 
     <TextInput
         style={styles.input}
@@ -155,7 +155,7 @@ export default function SignUp() {
 
     <TextInput
         style={styles.input}
-        placeholder="Savings Goal (Optional)"
+        placeholder="Monthly Savings Goal (Optional)"
         placeholderTextColor="#666"
         value={user.savingsGoal}
         onChangeText={(savingsGoal) => setUser(prevUser => ({...prevUser, savingsGoal: savingsGoal.replace(/[^0-9.]/g, '')}))}
@@ -171,7 +171,7 @@ export default function SignUp() {
     </TouchableOpacity>
 
     <TouchableOpacity onPress={() => navigator.goToLogin()}>
-        <Text style={styles.link}>Already have an account? Login</Text>
+        <Text style={styles.link}>Already have an account? LOGIN</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -179,35 +179,12 @@ export default function SignUp() {
 
 // --- Updated Styles for Disabled Button ---
 const styles = StyleSheet.create({
-    container: {
-        flexGrow: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-        backgroundColor: '#E8F5E9',
-    },
+    container: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 20, backgroundColor: '#E8F5E9' },
     logo: { fontSize: 36, marginBottom: 10, fontWeight: 'bold', color: '#2E7D32' },
     title: { fontSize: 26, marginBottom: 20, fontWeight: '600', color: '#2E7D32' },
-    input: {
-        width: '90%',
-        padding: 12,
-        marginBottom: 15,
-        borderWidth: 1,
-        borderColor: '#A5D6A7',
-        borderRadius: 12,
-        backgroundColor: '#fff',
-    },
-    button: {
-        width: '90%',
-        backgroundColor: '#43A047',
-        padding: 14,
-        borderRadius: 12,
-        alignItems: 'center',
-        marginTop: 10,
-    },
-    buttonDisabled: { // New style for disabled state
-        backgroundColor: '#A5D6A7', 
-    },
-    buttonText: { color: '#fff', fontSize: 18, fontWeight: '600' },
+    input: { width: '90%', padding: 12, marginBottom: 15, borderWidth: 1, borderColor: '#A5D6A7', borderRadius: 12, backgroundColor: '#fff' },
+    button: { width: '90%', backgroundColor: '#43A047', padding: 14, borderRadius: 12, alignItems: 'center', marginTop: 10, },
+    buttonDisabled: { backgroundColor: '#A5D6A7', },
+    buttonText: { color: '#ffffff', fontSize: 18, fontWeight: '600' },
     link: { marginTop: 20, fontSize: 18, color: '#388E3C', textDecorationLine: 'underline' },
 });
